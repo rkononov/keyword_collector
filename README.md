@@ -1,4 +1,3 @@
-keyword_collector
-=================
-
-Simple app that allows to manage keyword collector worker
+Hello!
+====
+Simple sinatra app to manage and collect search results on many search engines

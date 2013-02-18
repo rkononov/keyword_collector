@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  	<title>Sinatra + Twitter Bootstrap</title>
+    <script src="/vendor/jquery-1.9.1.min.js" type="text/javascript"></script>
+    <script src="/vendor/jquery-ui.js" type="text/javascript"></script>
+    <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+  </head>
+  <body style="padding-top: 50px;">
+
+    <div class="navbar navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+
+            <a class="brand" href="#">
+              Keywords app
+            </a>
+
+            <ul class="nav">
+              <!--<li><a href="/">Home</a></li>-->
+            </ul>
+        </div>
+      </div>
+    </div>
+
+	<div class="container">
+      <div class="row">
+        <div class="span6">
+          <h4>List of new questions:</h4>(double click to add to watch list)
+          <ul id="sortable1">
+            <%10.times do |i|%>
+                <li class="ui-state-highlight"><pre><%=Faker::Lorem.paragraph%><%=i%></pre></li>
+            <%end%>
+          </ul>
+        </div>
+        <h4>List of questions to watch/answer/vote</h4>(double click to remove)
+        <div class="span6">
+          <ul id="sortable2">
+            <%10.times do |i|%>
+                <li class="ui-state-highlight"><pre><%=Faker::Lorem.paragraph%><%=i%></pre></li>
+            <%end%>
+          </ul>
+        </div>
+      </div>
+
+	</div>
+  </body>
+</html>
+<script>
+    $(function() {
+
+        $("#sortable1").on('dblclick','li',function() {
+            $(this).appendTo('#sortable2');
+        });
+
+        $("#sortable2").on('dblclick','li',function() {
+            if (confirm('Are you sure?'))
+                $(this).remove();
+        });
+
+    });
+</script>
