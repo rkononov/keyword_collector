@@ -1,0 +1,12 @@
+runtime "ruby"
+name "CustomSearchReport"
+exec "custom_search.rb"
+
+
+
+gem "mail"
+gem "google-api-client"
+gem "twitter"
+gem "serel"
+gem "iron_cache"
+file 'config.yml'
