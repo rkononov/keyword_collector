@@ -6,6 +6,7 @@ exec "custom_search.rb"
 
 gem "mail"
 gem "google-api-client"
+gem "google-search"
 gem "twitter"
 gem "serel"
 gem "iron_cache"

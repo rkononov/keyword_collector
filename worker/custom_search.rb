@@ -5,6 +5,7 @@ require 'serel'
 require 'open-uri'
 require 'iron_cache'
 require 'yaml'
+require 'google-search'
 
 MAX_ITEMS = 100
 
@@ -54,19 +55,8 @@ def get_twitter_results(k,cache_client)
   results
 end
 
-def get_google_results(client, query,cache_client, config)
-  res = []
-  r = make_query(client, query, config)
-  puts r.data.inspect
-  res += r.data.items
-  number_of_items = r.data.search_information.total_results
-  puts "Number of found items:#{number_of_items}"
-  number_of_items = number_of_items > MAX_ITEMS ? MAX_ITEMS : number_of_items
-  (10..number_of_items).step(10) do |offset|
-    puts "Offset:#{offset}"
-    r = make_query(client, query, offset, config)
-    res += r.data.items
-  end
+def get_google_results(query,cache_client)
+  res = Google::Search::Web.new(:query => query).map{|l| {title:l.content, link: l.uri}}.uniq[0..max_items-1]
   result = []
   res.each do |v|
     result << {title: v.title, link: v.link, snippet: v.html_snippet} if v && new_url?(v.link, cache_client)
@@ -86,19 +76,6 @@ def new_url?(url, cache_client)
   val.nil?
 end
 
-def make_query(client, query, offset=1,config)
-  search = client.discovered_api('customsearch')
-  client.execute(
-      :api_method => search.cse.list,
-      :parameters => {
-          'q' => query,
-          'key' => config['google']['api_key'],
-          'cx' => config['google']['cx'],
-          'start' => offset
-      }
-  )
-end
-
 #-------------------------------WORKER START---------------------------------
 env = params['env']||'production'
 config = YAML.load_file("config_#{env}.yml")
@@ -115,7 +92,7 @@ results = {}
 keywords = params['keywords']||['rabbitmq', 'python+celery', 'message queue', 'python+workers', 'python+background']
 keywords.each do |k|
   results[k] ||= {}
-  results[k][:quora] = get_google_results(client, k,cache_client,custom_config)
+  results[k][:quora] = get_google_results(k,cache_client)
   results[k][:twitter] = get_twitter_results(k,cache_client)
   results[k][:stackoverflow] = get_stackoverflow(k,cache_client)
 end
