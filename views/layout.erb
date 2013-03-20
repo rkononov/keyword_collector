@@ -21,9 +21,9 @@
               <li class="dropdown">
                 <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select keyword results here<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
-                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">2013 16 11:45, celery,rabbit+mq,message+queue</a></li>
-                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">2013 15 11:45, celery,rabbit+mq,message+queue</a></li>
-                  <li role="presentation"><a role="menuitem" tabindex="-1" href="#">2013 14 11:45, celery,rabbit+mq,message+queue</a></li>
+                  <%@caches.each do |cache|%>
+                    <li role="presentation"><a role="menuitem" tabindex="-1" onclick="load_results('<%=cache%>')"><%=cache%></a></li>
+                  <%end%>
                 </ul>
               </li>
             </ul>
@@ -37,9 +37,7 @@
           <p>Caches:<%=@caches.inspect %></p>
           <h4>List of new questions:</h4>(double click to add to watch list)
           <ul id="sortable1">
-            <%10.times do |i|%>
-                <li class="ui-state-highlight"><pre><%=Faker::Lorem.paragraph%><%=i%></pre></li>
-            <%end%>
+            No Results, please select keyword results above
           </ul>
         </div>
         <h4>List of questions to watch/answer/vote</h4>(double click to remove)
@@ -71,4 +69,16 @@
         });
 
     });
+        function load_results(cache){
+            $.getJSON('/results_list?cache='+cache, function(data) {
+                console.log(data);
+                $('#sortable1').html('');
+                $.each(data,function(index, value) {
+                    console.log(value);
+                    $('#sortable1').append('<li class="ui-state-highlight"><pre>' + value + '</pre></li>');
+                });
+
+            });
+        }
+
 </script>

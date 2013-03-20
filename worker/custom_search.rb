@@ -1,3 +1,4 @@
+require 'json'
 require 'cgi'
 require 'google/api_client'
 require 'twitter'
@@ -6,19 +7,16 @@ require 'open-uri'
 require 'iron_cache'
 require 'yaml'
 require 'google-search'
+require 'iron_cache_storage'
 
 MAX_ITEMS = 100
-
-def initialize_client(api_key)
-  Google::APIClient.new(:key => api_key, :authorization => nil)
-end
 
 def initialize_stackoverflow(api_key)
   Serel::Base.config(:stackoverflow,api_key)
 end
 
-def initialize_iron_cache(config,env)
-  client = IronCache::Client.new({"token" => config["iron"]["token"], "project_id" => config["iron"]["project_id"]})
+def initialize_iron_cache(env)
+  client = IronCache::Client.new
   client.cache(env)
 end
 
@@ -56,10 +54,11 @@ def get_twitter_results(k,cache_client)
 end
 
 def get_google_results(query,cache_client)
-  res = Google::Search::Web.new(:query => query).map{|l| {title:l.content, link: l.uri}}.uniq[0..max_items-1]
+  res = Google::Search::Web.new(:query => "#{query} site:quora.com").map{|l| {title:l.content, link: l.uri}}.uniq
   result = []
   res.each do |v|
-    result << {title: v.title, link: v.link, snippet: v.html_snippet} if v && new_url?(v.link, cache_client)
+    result << v if v && new_url?(v[:link], cache_client)
+    break if result.size >= MAX_ITEMS
   end
   result
 end
@@ -78,21 +77,24 @@ end
 
 #-------------------------------WORKER START---------------------------------
 env = params['env']||'production'
-config = YAML.load_file("config_#{env}.yml")
 custom_config = YAML.load_file("config.yml")
 puts "CUSTOM_CONFIG:#{custom_config.inspect}"
 initialize_stackoverflow(custom_config['stackoverflow']['api_key'])
-client = initialize_client(custom_config['google']['api_key'])
 initialize_twitter(custom_config['twitter'])
-configure_mail(config)
-cache_client = initialize_iron_cache(config,env)
+cache_client = initialize_iron_cache(env)
 
 #collecting results
-results = {}
 keywords = params['keywords']||['rabbitmq', 'python+celery', 'message queue', 'python+workers', 'python+background']
+results = []
 keywords.each do |k|
-  results[k] ||= {}
-  results[k][:quora] = get_google_results(k,cache_client)
-  results[k][:twitter] = get_twitter_results(k,cache_client)
-  results[k][:stackoverflow] = get_stackoverflow(k,cache_client)
+  results << get_google_results(k,cache_client)
+  results << get_twitter_results(k,cache_client)
+  results << get_stackoverflow(k,cache_client)
 end
+
+#putting all of them into cache
+cache_name = (Time.now.strftime("%Y-%m-%d_%H:%M_") + keywords.join('_')).gsub(/ /,'-')
+cache_name = cache_name.length > 40 ? "#{cache_name[0..40]}..." : cache_name
+storage = IronCacheStorage.new
+storage.put_to_cache(results, cache_name)
+storage.put_value_to_cache(keywords,'keywords', cache_name)

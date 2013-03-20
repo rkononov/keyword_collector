@@ -24,6 +24,16 @@ class IronCacheStorage
     puts cache.delete("values_#{values.count+1}") rescue "not exist"
   end
 
+  def put_value_to_cache(value,key_name, cache_name)
+    cache = @client.cache(cache_name)
+    cache.put(key_name, value.to_json)
+  end
+
+  def get_value_from_cache(key_name, cache_name)
+    cache = @client.cache(cache_name)
+    JSON.parse cache.get(key_name)
+  end
+
   def get_caches
     @client.caches.list.map(&:name)
   end

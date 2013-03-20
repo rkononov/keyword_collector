@@ -35,3 +35,7 @@ post '/remove_question' do
   puts "remove question from cache :#{params.inspect}"
 end
 
+get '/results_list' do
+  params["cache"] ? settings.storage.get_from_cache(params["cache"]).to_json : [].to_json
+end
+

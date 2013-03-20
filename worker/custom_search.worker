@@ -3,7 +3,7 @@ name "CustomSearchReport"
 exec "custom_search.rb"
 
 
-
+gem "json"
 gem "mail"
 gem "google-api-client"
 gem "google-search"
@@ -11,3 +11,7 @@ gem "twitter"
 gem "serel"
 gem "iron_cache"
 file 'config.yml'
+file '../iron.json'
+file '../helpers/iron_cache_storage.rb'
+
+full_remote_build true
