@@ -6,6 +6,7 @@
     <script src="/vendor/jquery-ui.js" type="text/javascript"></script>
     <script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
     <link rel="stylesheet" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/main.css">
   </head>
   <body style="padding-top: 50px;">
 
@@ -44,7 +45,7 @@
         <div class="span6">
           <ul id="sortable2">
             <%@saved.each do |q|%>
-                <li class="ui-state-highlight"><%=q%></li>
+                <li class="ui-state-highlight nice_borders"><%=q%></li>
             <%end%>
           </ul>
         </div>
@@ -75,7 +76,7 @@
                 $('#sortable1').html('');
                 $.each(data,function(index, value) {
                     console.log(value);
-                    $('#sortable1').append('<li class="ui-state-highlight"><pre>' + value + '</pre></li>');
+                    $('#sortable1').append('<li class="ui-state-highlight-pre nice_borders">' + value + '</li>');
                 });
 
             });
