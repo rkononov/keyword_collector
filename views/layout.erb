@@ -19,6 +19,7 @@
             </a>
 
             <ul class="nav">
+              <li class="divider-vertical"></li>
               <li class="dropdown">
                 <a id="drop1" href="#" role="button" class="dropdown-toggle" data-toggle="dropdown">Select keyword results here<b class="caret"></b></a>
                 <ul class="dropdown-menu" role="menu" aria-labelledby="drop1">
@@ -27,6 +28,8 @@
                   <%end%>
                 </ul>
               </li>
+              <li class="divider-vertical"></li>
+              <li><a href="#myModal" role="button" data-toggle="modal">Launch worker</a></li>
             </ul>
         </div>
       </div>
@@ -34,6 +37,10 @@
 
 	<div class="container">
       <div class="row">
+        <div id="launchAlert" class="alert" data-alert="alert" style="top:0;display:none;">
+          <a class="close" data-dismiss="alert" href="#">×</a>
+          <p><strong>Well done!</strong> results will appear soon.</p>
+        </div>
         <div class="span6">
           <h4>List of new questions:</h4>(double click to add to watch list)
           <h5>Keywords: <span id="keywords"></span></h5>
@@ -50,8 +57,21 @@
           </ul>
         </div>
       </div>
-
 	</div>
+    <div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+        <h3 id="myModalLabel">Launch options</h3>
+      </div>
+      <div class="modal-body">
+        <label>Please input list of comma separated keywords:</label>
+        <input id="input_keywords" class="input-xxlarge" type="text" placeholder="rabbitmq, python+celery, message queue, python+workers, python+background">
+      </div>
+      <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+        <button class="btn btn-primary" onclick='launch_worker()'>Launch it!</button>
+      </div>
+    </div>
   </body>
 </html>
 <script>
@@ -70,9 +90,14 @@
         });
 
     });
+        function launch_worker(){
+            k = $("#input_keywords").val();
+            $.post('/queue_worker',{keywords: k});
+            $('#myModal').modal('hide');
+            $('#launchAlert').show();
+        }
         function load_results(cache){
             $.getJSON('/cache_details?cache='+cache, function(data) {
-                console.log(data);
                 $('#keywords').html(data.join());
             });
             $.getJSON('/cache_results?cache='+cache, function(data) {

@@ -7,6 +7,7 @@ require_relative 'helpers/iron_cache_storage.rb'
 configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   set :storage, IronCacheStorage.new
+  set :worker, IronWorkerNG::Client.new
 end
 
 get '/' do
@@ -41,4 +42,10 @@ end
 
 get '/cache_details' do
   params["cache"] ? settings.storage.get_value_from_cache('keywords', params["cache"]).to_json : ''
+end
+
+post '/queue_worker' do
+  puts "PARAMS:#{params.inspect}"
+  keywords = params["keywords"] ? params["keywords"].split(',') : ['rabbitmq', 'python+celery', 'message queue', 'python+workers', 'python+background']
+  settings.worker.tasks.create("CustomSearchReport", {"keywords"=>keywords})
 end

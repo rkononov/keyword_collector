@@ -64,7 +64,7 @@ def get_google_results(query,cache_client)
 end
 
 def new_url?(url, cache_client)
-  return true
+  #return true
   url = url[0..200] #cutting long urls
   val = cache_client.get(CGI::escape(url))
   puts "Checking #{url}, link #{val ? "found": "not found"}"
