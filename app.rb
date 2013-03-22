@@ -10,7 +10,7 @@ configure do
 end
 
 get '/' do
-  @caches = settings.storage.get_caches
+  @caches = settings.storage.get_caches.select{|c| c=~ /^\d+/}
   @saved = settings.storage.get_from_cache('saved_search')
   erb "Hey"
 end
@@ -35,7 +35,10 @@ post '/remove_question' do
   puts "remove question from cache :#{params.inspect}"
 end
 
-get '/results_list' do
+get '/cache_results' do
   params["cache"] ? settings.storage.get_from_cache(params["cache"]).to_json : [].to_json
 end
 
+get '/cache_details' do
+  params["cache"] ? settings.storage.get_value_from_cache('keywords', params["cache"]).to_json : ''
+end

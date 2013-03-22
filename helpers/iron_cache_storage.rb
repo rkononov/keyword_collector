@@ -31,7 +31,7 @@ class IronCacheStorage
 
   def get_value_from_cache(key_name, cache_name)
     cache = @client.cache(cache_name)
-    JSON.parse cache.get(key_name)
+    JSON.parse cache.get(key_name).value
   end
 
   def get_caches

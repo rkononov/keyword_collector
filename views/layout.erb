@@ -35,8 +35,8 @@
 	<div class="container">
       <div class="row">
         <div class="span6">
-          <p>Caches:<%=@caches.inspect %></p>
           <h4>List of new questions:</h4>(double click to add to watch list)
+          <h5>Keywords: <span id="keywords"></span></h5>
           <ul id="sortable1">
             No Results, please select keyword results above
           </ul>
@@ -71,12 +71,15 @@
 
     });
         function load_results(cache){
-            $.getJSON('/results_list?cache='+cache, function(data) {
+            $.getJSON('/cache_details?cache='+cache, function(data) {
                 console.log(data);
+                $('#keywords').html(data.join());
+            });
+            $.getJSON('/cache_results?cache='+cache, function(data) {
                 $('#sortable1').html('');
                 $.each(data,function(index, value) {
-                    console.log(value);
-                    $('#sortable1').append('<li class="ui-state-highlight-pre nice_borders">' + value + '</li>');
+                    source_link = " via <a target='_blank' href='" + value["link"] + "'>" + value["source"] + "</a>"
+                    $('#sortable1').append('<li class="ui-state-highlight-pre nice_borders">' + value["title"] + source_link + '</li>');
                 });
 
             });
