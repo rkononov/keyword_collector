@@ -89,7 +89,7 @@ keywords = params['keywords']||['rabbitmq', 'python+celery', 'message queue', 'p
 results = []
 keywords.each do |k|
   results += get_google_results(k,cache_client)
-  #results += get_twitter_results(k,cache_client)
+  results += get_twitter_results(k,cache_client)
   results += get_stackoverflow(k,cache_client)
 end
 #putting all of them into cache

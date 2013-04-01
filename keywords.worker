@@ -1,0 +1,13 @@
+runtime "ruby"
+file 'iron.json'
+gem 'rest'
+gem 'sinatra'
+gem 'iron_worker_ng'
+gem 'faker'
+gem 'iron_cache'
+dir 'helpers'
+dir 'static'
+dir 'views'
+dir 'worker'
+
+exec 'app.rb'

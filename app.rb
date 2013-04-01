@@ -8,6 +8,7 @@ configure do
   set :public_folder, Proc.new { File.join(root, "static") }
   set :storage, IronCacheStorage.new
   set :worker, IronWorkerNG::Client.new
+  set :port, port = ENV['PORT'] ? ENV['PORT'].to_i : 4567
 end
 
 get '/' do
