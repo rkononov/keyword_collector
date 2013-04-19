@@ -3,6 +3,11 @@ require 'faker'
 require 'iron_worker_ng'
 require 'iron_cache'
 require_relative 'helpers/iron_cache_storage.rb'
+
+def parse_keywords(p)
+  p["keywords"] ? p["keywords"].split(',') : ['rabbitmq', 'python+celery', 'message queue', 'python+workers', 'python+background']
+end
+
 my_app = Sinatra.new do
   #set :public_folder, './static' #doesn't work in IronPaas
   set :storage, IronCacheStorage.new
@@ -12,14 +17,14 @@ my_app = Sinatra.new do
 
   #workaround to debug public folder
   get '/static/*' do
-    puts "requested file:#{params[:splat]}"
     send_file File.join('static', params[:splat])
   end
 
   get '/' do
-    puts "Hey hey hey!"
     @caches = settings.storage.get_caches.select{|c| c=~ /^\d+/}
     @saved = settings.storage.get_from_cache('saved_search')
+    @schedules = settings.worker.schedules.list.select{|s| s.code_name=='CustomSearchReport'}
+    puts @schedules.inspect
     erb "Hey"
   end
 
@@ -52,9 +57,21 @@ my_app = Sinatra.new do
   end
 
   post '/queue_worker' do
-    puts "PARAMS:#{params.inspect}"
-    keywords = params["keywords"] ? params["keywords"].split(',') : ['rabbitmq', 'python+celery', 'message queue', 'python+workers', 'python+background']
-    settings.worker.tasks.create("CustomSearchReport", {"keywords"=>keywords})
+    keywords = parse_keywords(params)
+    r = params["run_every"]
+    if r && r!="Don't schedule"
+      settings.worker.schedules.create("CustomSearchReport", {"keywords"=>keywords},{"run_every" => r.to_i*3600})
+    else
+      settings.worker.tasks.create("CustomSearchReport", {"keywords"=>keywords})
+    end
   end
+
+  post '/cancel_scheduled' do
+    id = params[:scheduled_id]
+    if id
+      settings.worker.schedules.cancel(id)
+    end
+  end
+
 end
 my_app.run!
