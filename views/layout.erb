@@ -14,8 +14,8 @@
   <div class="navbar-inner">
     <div class="container">
 
-      <a class="brand" href="#">
-        Keywords collector
+      <a class="brand" href="#aboutModal" data-toggle="modal">
+        Keywords collector <small><%=settings.demo ? "<b>demo</b>":'full '%> version</small>
       </a>
 
       <ul class="nav">
@@ -31,7 +31,7 @@
           </ul>
         </li>
         <li class="divider-vertical"></li>
-        <li><a href="#optionsModal" role="button" data-toggle="modal">Launch worker</a></li>
+        <li><a href="#optionsModal" role="button" data-toggle="modal" id="launch_worker">Launch worker</a></li>
         <li class="divider-vertical"></li>
         <li><a href="#schedulesModal" role="button" data-toggle="modal">Scheduled tasks</a></li>
       </ul>
@@ -74,7 +74,7 @@
     <label>Please input list of comma separated keywords:</label>
     <input id="input_keywords" class="input-xxlarge" type="text" placeholder="rabbitmq, python+celery, message queue, python+workers, python+background">
     <label>Schedule and run every (hours):</label>
-    <select id="run_every">
+    <select id="run_every" <%=settings.demo ? 'disabled="true"':''%>>
       <option>Don't schedule</option>
       <option>1</option>
       <option>10</option>
@@ -93,12 +93,20 @@
   </div>
   <div class="modal-body">
     <% if @schedules.count > 0 %>
+        <table class="table">
+          <tr>
+            <th>Keywords</th>
+            <th>Run count</th>
+            <th>Actions</th>
+          </tr>
         <% @schedules.each do |s| %>
-            <ul>
-              <li>Keywords:<%= JSON.parse(s.payload)["keywords"]%>
-            <button class="btn" onclick='cancel_scheduled("<%=s.id%>")'>Cancel</button></li>
-                </ul>
+            <tr>
+              <td><%= JSON.parse(s.payload)["keywords"]%></td>
+              <td><%=s.run_count%></td>
+              <td><button class="btn btn-danger btn-small" <%=settings.demo ? 'disabled="true"':''%> onclick='cancel_scheduled("<%=s.id%>")'>Cancel</button></td>
+            </tr>
         <% end %>
+            </table>
     <% else %>
         <h6>No scheduled tasks</h6>
     <% end %>
@@ -108,9 +116,24 @@
 
   </div>
 </div>
+<div id="aboutModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="aboutModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="aboutLabel">Keywords collector <%=settings.demo ? "demo":'full '%> version</h3>
+  </div>
+  <div class="modal-body">
+    Full version (hosted under your account) allow you to have unlimited scheduled tasks (upto 100) in demo version you can't manage scheduled tasks.
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+
+  </div>
+</div>
 </body>
 </html>
 <script>
+  var timer;
+  var task_id;
     $(function () {
         <%if @caches.count > 0%>
         $(document).ready(function () {
@@ -133,9 +156,23 @@
     function launch_worker() {
         k = $("#input_keywords").val();
         r = $("#run_every").val();
-        $.post('/queue_worker', {keywords: k, run_every:r});
+        $.post('/queue_worker', {keywords: k, run_every:r}, function(data) {
+            obj = JSON.parse(data);
+            if (obj['id'])
+                task_id = obj['id']
+                timer = window.setInterval(wait_the_worker,3000);
+        });
         $('#optionsModal').modal('hide');
         $('#actionAlert').show();
+    }
+    function wait_the_worker(){
+        $.get('/task_status?task_id=' + task_id, function (data) {
+            $('#launch_worker').html('Task:' + data + '<img src="/static/loader-arrows.gif"></img>');
+            if (data=='complete'){
+                window.clearTimeout(timer);
+                location.reload();
+            }
+        });
     }
     function cancel_scheduled(id) {
         $.post('/cancel_scheduled', {scheduled_id: id});

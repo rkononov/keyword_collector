@@ -10,6 +10,7 @@ end
 
 my_app = Sinatra.new do
   #set :public_folder, './static' #doesn't work in IronPaas
+  set :demo, !ENV['PORT'].nil?
   set :storage, IronCacheStorage.new
   set :worker, IronWorkerNG::Client.new
   set :port, port = ENV['PORT'] ? ENV['PORT'].to_i : 4567
@@ -56,19 +57,26 @@ my_app = Sinatra.new do
     params["cache"] ? settings.storage.get_value_from_cache('keywords', params["cache"]).to_json : ''
   end
 
+  get '/task_status' do
+    params["task_id"] ? settings.worker.tasks.get(params["task_id"]).status: ''
+  end
+
   post '/queue_worker' do
     keywords = parse_keywords(params)
     r = params["run_every"]
-    if r && r!="Don't schedule"
+    res = {}
+    if r && r!="Don't schedule" && !settings.demo
       settings.worker.schedules.create("CustomSearchReport", {"keywords"=>keywords},{"run_every" => r.to_i*3600})
     else
-      settings.worker.tasks.create("CustomSearchReport", {"keywords"=>keywords})
+      r = settings.worker.tasks.create("CustomSearchReport", {"keywords"=>keywords})
+      res = {id:r.id} if r.id
     end
+    res.to_json
   end
 
   post '/cancel_scheduled' do
     id = params[:scheduled_id]
-    if id
+    if id && !settings.demo
       settings.worker.schedules.cancel(id)
     end
   end
