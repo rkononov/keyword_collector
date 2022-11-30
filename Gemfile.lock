@@ -16,9 +16,11 @@ GEM
       rubyzip (>= 0.9.9)
     listen (0.7.1)
     mime-types (1.19)
+    mustermann (3.0.0)
+      ruby2_keywords (~> 0.0.1)
     net-http-persistent (2.8)
-    rack (1.6.12)
-    rack-protection (1.5.5)
+    rack (2.2.4)
+    rack-protection (3.0.4)
       rack
     rb-fsevent (0.9.3)
     rerun (0.7.1)
@@ -28,12 +30,14 @@ GEM
       rest-client (>= 0.3.0)
     rest-client (1.6.7)
       mime-types (>= 1.16)
+    ruby2_keywords (0.0.5)
     rubyzip (2.0.0)
-    sinatra (1.3.3)
-      rack (~> 1.3, >= 1.3.6)
-      rack-protection (~> 1.2)
-      tilt (~> 1.3, >= 1.3.3)
-    tilt (1.3.3)
+    sinatra (3.0.4)
+      mustermann (~> 3.0)
+      rack (~> 2.2, >= 2.2.4)
+      rack-protection (= 3.0.4)
+      tilt (~> 2.0)
+    tilt (2.0.11)
 
 PLATFORMS
   ruby
@@ -44,7 +48,7 @@ DEPENDENCIES
   iron_worker_ng
   rb-fsevent
   rerun
-  sinatra
+  sinatra (>= 2.2.3)
 
 BUNDLED WITH
    1.17.3
