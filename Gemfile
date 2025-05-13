@@ -1,6 +1,6 @@
 source "https://rubygems.org"
 
-gem "sinatra"
+gem "sinatra", ">= 4.0.0"
 
 gem "faker", ">= 1.0.1"
 # The rerun command restarts the app if your files change
